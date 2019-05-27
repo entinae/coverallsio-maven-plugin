@@ -106,6 +106,12 @@
       <version>3.6.0</version>
     </dependency>
     <dependency>
+      <!-- Needed for coveralls-maven-plugin to run on J9+ -->
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+    <dependency>
       <artifactId>junit</artifactId>
       <groupId>junit</groupId>
       <version>4.12</version>
