@@ -22,6 +22,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Scanner;
 
@@ -54,11 +56,10 @@ public class CoverallsMojo extends CoverallsReportMojo {
   @Parameter(defaultValue="${aggregateOnly}")
   private boolean aggregateOnly;
 
-  @Parameter(defaultValue="${skipAggregate}")
-  private boolean skipAggregate;
+  @Parameter(defaultValue="${skipModule}")
+  private String skipModule;
 
-  private boolean firstExecution = true;
-  private boolean skipExecution = false;
+  private boolean isReversedExecution = false;
   private boolean wasDryRun = false;
 
   static Model getModelArtifact(final File pomFile)  {
@@ -73,7 +74,7 @@ public class CoverallsMojo extends CoverallsReportMojo {
     }
   }
 
-  private void addGeneratedSourcePaths(final Model model, final List<File> filePaths) throws IOException {
+  private void addGeneratedSourcePaths(final Model model, final Collection<File> filePaths) throws IOException {
     if ("pom".equals(model.getPackaging())) {
       for (final String module : model.getModules()) {
         addGeneratedSourcePaths(getModelArtifact(new File(model.getPomFile().getParentFile(), module + "/pom.xml")), filePaths);
@@ -84,7 +85,7 @@ public class CoverallsMojo extends CoverallsReportMojo {
     }
   }
 
-  private void addGeneratedSourcePaths(final File buildDir, final List<File> filePaths) throws IOException {
+  private void addGeneratedSourcePaths(final File buildDir, final Collection<File> filePaths) throws IOException {
     final File generatedSources = new File(buildDir, "generated-sources");
     if (!generatedSources.exists())
       return;
@@ -141,7 +142,7 @@ public class CoverallsMojo extends CoverallsReportMojo {
       if (packageName != null)
         paths.add(filePath.substring(0, filePath.length() - packageName.length() - 1));
       else
-        log.warn("Could not determine package name of: " + file.getAbsolutePath());
+        super.getLog().warn("Could not determine package name of: " + file.getAbsolutePath());
     });
 
     if (paths.size() == 0)
@@ -172,41 +173,45 @@ public class CoverallsMojo extends CoverallsReportMojo {
   }
 
   private void submitExecution(final MavenProject project, final ReverseExecutor reverseExecutor) {
-    log.info("Submitting " + project.getName() + " " + project.getVersion());
+    super.getLog().info("Submitting " + project.getName() + " " + project.getVersion());
     reverseExecutor.submit(project, () -> {
-      if (!isAggregator())
-        return;
-
-      log.info("Running " + project.getName() + " " + project.getVersion());
-      if (skipAggregate) {
-        log.info("\"skipAggregate\" property set, skipping aggregate execution for POM module");
-        return;
-      }
-
-      dryRun = wasDryRun;
-      skipExecution = false;
-      firstExecution = false;
       try {
+        super.getLog().info("Running " + project.getName() + " " + project.getVersion());
+
+        dryRun = wasDryRun;
+        isReversedExecution = true;
+
+        if (aggregateOnly && !isAggregator()) {
+          super.getLog().info("\"aggregateOnly\" property set, skipping plugin execution for non-POM module");
+          return;
+        }
+
+        if (project.getArtifactId().equals(skipModule)) {
+          super.getLog().info("\"skipModule\" property set to \"" + skipModule + "\", skipping plugin execution");
+          return;
+        }
+
         execute();
       }
       catch (final MojoExecutionException | MojoFailureException e) {
         throw new IllegalStateException(e);
       }
+      finally {
+        dryRun = true;
+        isReversedExecution = false;
+      }
     });
   }
 
-  private Log log;
+  private Log filterLog;
 
   @Override
-  protected Job createJob() throws ProcessingException, IOException {
-    if (firstExecution) {
-      if (this.log == null)
-        this.log = getLog();
-
-      setLog(new FilterLog(this.log) {
+  public Log getLog() {
+    if (filterLog == null) {
+      filterLog = new FilterLog(super.getLog()) {
         @Override
         public boolean isInfoEnabled() {
-          return !aggregateOnly || !firstExecution;
+          return isReversedExecution;
         }
 
         @Override
@@ -226,29 +231,37 @@ public class CoverallsMojo extends CoverallsReportMojo {
           if (isInfoEnabled())
             super.info(error);
         }
-      });
+      };
+    }
 
-      if (aggregateOnly || isAggregator()) {
-        skipExecution = true;
-        if (!isAggregator())
-          log.info("\"aggregateOnly\" property set, skipping plugin execution for non-POM module");
-      }
+    return filterLog;
+  }
 
-      submitExecution(project, reverseExecutor);
-      wasDryRun = dryRun;
-      dryRun = true;
+  @Override
+  protected Job createJob() throws ProcessingException, IOException {
+    if (isReversedExecution) {
+      jacocoReports = getJacocoReports();
     }
     else {
-      jacocoReports = getJacocoReports();
+      wasDryRun = dryRun;
+      dryRun = true;
+      submitExecution(project, reverseExecutor);
     }
 
     if (detectGeneratedSourcePaths) {
       final List<File> generatedSourceDirs = new ArrayList<>();
       addGeneratedSourcePaths(project.getModel(), generatedSourceDirs);
-      if (sourceDirectories != null)
-        sourceDirectories.addAll(generatedSourceDirs);
-      else
-        sourceDirectories = generatedSourceDirs;
+      if (generatedSourceDirs.size() > 0) {
+        if (sourceDirectories != null) {
+          final LinkedHashSet<File> set = new LinkedHashSet<>(sourceDirectories);
+          set.addAll(generatedSourceDirs);
+          sourceDirectories.clear();
+          sourceDirectories.addAll(set);
+        }
+        else {
+          sourceDirectories = generatedSourceDirs;
+        }
+      }
     }
 
     return super.createJob();
@@ -256,27 +269,27 @@ public class CoverallsMojo extends CoverallsReportMojo {
 
   @Override
   protected SourceLoader createSourceLoader(final Job job) {
-    return skipExecution ? null : super.createSourceLoader(job);
+    return isReversedExecution ? super.createSourceLoader(job) : null;
   }
 
   @Override
   protected List<CoverageParser> createCoverageParsers(final SourceLoader sourceLoader) throws IOException {
-    return skipExecution ? null : super.createCoverageParsers(sourceLoader);
+    return isReversedExecution ? super.createCoverageParsers(sourceLoader) : null;
   }
 
   @Override
   protected CoverallsClient createCoverallsClient() {
-    return skipExecution ? null : super.createCoverallsClient();
+    return isReversedExecution ? super.createCoverallsClient() : null;
   }
 
   @Override
   protected SourceCallback createSourceCallbackChain(final JsonWriter writer, final List<Logger> reporters) {
-    return skipExecution ? null : super.createSourceCallbackChain(writer, reporters);
+    return isReversedExecution ? super.createSourceCallbackChain(writer, reporters) : null;
   }
 
   @Override
   protected void writeCoveralls(final JsonWriter writer, final SourceCallback sourceCallback, final List<CoverageParser> parsers) throws ProcessingException, IOException {
-    if (!skipExecution)
+    if (isReversedExecution)
       super.writeCoveralls(writer, sourceCallback, parsers);
   }
 }
