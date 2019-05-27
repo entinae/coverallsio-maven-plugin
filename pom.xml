@@ -21,12 +21,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.safris.maven</groupId>
   <artifactId>coverallsio-maven-plugin</artifactId>
-  <version>4.3.0</version>
+  <version>4.3.0-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <url>https://github.com/SevaSafris/coverallsio-maven-plugin</url>
   <name>Coveralls.io Maven Plugin</name>
   <description>
-    The Coveralls.io Maven Plugin supports aggregae execution during a non-aggregate build.
+    The Coveralls.io Maven Plugin supports aggregate execution during a non-aggregate build.
   </description>
   <organization>
     <name>Seva Safris</name>
