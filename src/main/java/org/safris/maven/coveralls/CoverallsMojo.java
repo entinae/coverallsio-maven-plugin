@@ -186,7 +186,7 @@ public class CoverallsMojo extends CoverallsReportMojo {
           return;
         }
 
-        if (project.getArtifactId().equals(skipModule)) {
+        if ("*".equals(skipModule) || project.getArtifactId().equals(skipModule)) {
           super.getLog().info("\"skipModule\" property set to \"" + skipModule + "\", skipping plugin execution");
           return;
         }
