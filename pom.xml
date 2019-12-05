@@ -23,7 +23,7 @@
   <artifactId>coverallsio-maven-plugin</artifactId>
   <version>4.3.0-1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
-  <url>https://github.com/SevaSafris/coverallsio-maven-plugin</url>
+  <url>https://github.com/safris/coverallsio-maven-plugin</url>
   <name>Coveralls.io Maven Plugin</name>
   <description>
     The Coveralls.io Maven Plugin supports aggregate execution during a non-aggregate build.
@@ -33,9 +33,9 @@
     <url>https://www.safris.org/</url>
   </organization>
   <scm>
-    <url>https://github.com/SevaSafris/coverallsio-maven-plugin</url>
-    <connection>scm:git:https://github.com/SevaSafris/coverallsio-maven-plugin.git</connection>
-    <developerConnection>scm:git:https://github.com/SevaSafris/coverallsio-maven-plugin.git</developerConnection>
+    <url>https://github.com/safris/coverallsio-maven-plugin</url>
+    <connection>scm:git:https://github.com/safris/coverallsio-maven-plugin.git</connection>
+    <developerConnection>scm:git:https://github.com/safris/coverallsio-maven-plugin.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
   <licenses>
@@ -47,7 +47,7 @@
   </licenses>
   <developers>
     <developer>
-      <id>sevasafris</id>
+      <id>safris</id>
       <name>Seva Safris</name>
       <email>seva@safris.org</email>
     </developer>
