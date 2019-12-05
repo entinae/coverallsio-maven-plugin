@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -62,15 +63,15 @@ public class CoverallsMojo extends CoverallsReportMojo {
   private boolean isReversedExecution = false;
   private boolean wasDryRun = false;
 
-  static Model getModelArtifact(final File pomFile)  {
+  static Model getModelArtifact(final File pomFile) throws IOException {
     try {
       final MavenXpp3Reader reader = new MavenXpp3Reader();
       final Model model = reader.read(new FileReader(pomFile));
       model.setPomFile(pomFile);
       return model;
     }
-    catch (final IOException | XmlPullParserException e) {
-      throw new IllegalStateException(e);
+    catch (final XmlPullParserException e) {
+      throw new IllegalArgumentException(pomFile.getAbsolutePath(), e);
     }
   }
 
@@ -91,11 +92,11 @@ public class CoverallsMojo extends CoverallsReportMojo {
       return;
 
     final List<String> paths = new ArrayList<>();
-    Files.walk(generatedSources.toPath()).filter(Files::isRegularFile).forEach((o) -> {
-      final File file = o.toFile();
-      if (!file.getName().endsWith(".java"))
-        return;
-
+    Files
+      .walk(generatedSources.toPath())
+      .filter(p -> p.getFileName().toString().endsWith(".java"))
+      .map(Path::toFile)
+      .forEach(file -> {
       final String filePath = file.getParentFile().getAbsolutePath();
       for (final String path : paths)
         if (filePath.startsWith(path))
