@@ -21,7 +21,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.safris.maven</groupId>
   <artifactId>coverallsio-maven-plugin</artifactId>
-  <version>4.3.0-1</version>
+  <version>4.3.0-2-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <url>https://github.com/safris/coverallsio-maven-plugin</url>
   <name>Coveralls.io Maven Plugin</name>
