@@ -33,6 +33,7 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -47,7 +48,7 @@ import org.eluder.coveralls.maven.plugin.logging.Logger;
 import org.eluder.coveralls.maven.plugin.source.SourceCallback;
 import org.eluder.coveralls.maven.plugin.source.SourceLoader;
 
-@Mojo(name="report", threadSafe=false)
+@Mojo(name="report", defaultPhase=LifecyclePhase.DEPLOY, threadSafe=false)
 public class CoverallsMojo extends CoverallsReportMojo {
   private static final ReverseExecutor reverseExecutor = new ReverseExecutor();
 
