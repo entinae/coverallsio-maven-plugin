@@ -36,10 +36,12 @@ public class ReverseExecutor {
     private Module(final MavenProject project, final Runnable runnable) {
       this.project = Objects.requireNonNull(project);
       this.runnable = runnable;
-      if (project.hasParent() && project.getParent().getBasedir() != null)
+      if (project.hasParent() && project.getParent().getBasedir() != null && project.getBasedir().getAbsolutePath().startsWith(project.getParent().getBasedir().getAbsolutePath())) {
         this.name = project.getBasedir().getAbsolutePath().substring(project.getParent().getBasedir().getAbsolutePath().length() + 1);
-      else
+      }
+      else {
         this.name = project.getBasedir().getName();
+      }
 
       for (final String module : new ArrayList<>(project.getModules()))
         this.modules.put(module, null);

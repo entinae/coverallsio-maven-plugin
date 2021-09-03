@@ -2,7 +2,7 @@
 
 > The Coveralls.io Maven Plugin supports aggregate execution during a non-aggregate build.
 
-[![Build Status](https://travis-ci.org/safris/coverallsio-maven-plugin.png)](https://travis-ci.org/safris/coverallsio-maven-plugin)
+[![Build Status](https://github.com/safris/coverallsio-maven-plugin/actions/workflows/build.yml/badge.svg)](https://github.com/safris/coverallsio-maven-plugin/actions/workflows/build.yml)
 [![Coverage Status](https://coveralls.io/repos/github/safris/coverallsio-maven-plugin/badge.svg)](https://coveralls.io/github/safris/coverallsio-maven-plugin)
 [![Javadocs](https://www.javadoc.io/badge/org.safris.maven/coverallsio-maven-plugin.svg)](https://www.javadoc.io/doc/org.safris.maven/coverallsio-maven-plugin)
 [![Released Version](https://img.shields.io/maven-central/v/org.safris.maven/coverallsio-maven-plugin.svg)](https://mvnrepository.com/artifact/org.safris.maven/coverallsio-maven-plugin)
