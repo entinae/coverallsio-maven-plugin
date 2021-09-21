@@ -43,13 +43,14 @@ import org.eluder.coveralls.maven.plugin.CoverallsReportMojo;
 import org.eluder.coveralls.maven.plugin.ProcessingException;
 import org.eluder.coveralls.maven.plugin.domain.Job;
 import org.eluder.coveralls.maven.plugin.httpclient.CoverallsClient;
+import org.eluder.coveralls.maven.plugin.httpclient.CoverallsIoClient;
 import org.eluder.coveralls.maven.plugin.json.JsonWriter;
 import org.eluder.coveralls.maven.plugin.logging.Logger;
 import org.eluder.coveralls.maven.plugin.source.SourceCallback;
 import org.eluder.coveralls.maven.plugin.source.SourceLoader;
 
 @Mojo(name="report", defaultPhase=LifecyclePhase.DEPLOY, threadSafe=false)
-public class CoverallsMojo extends CoverallsReportMojo {
+public class CoverallsIoMojo extends CoverallsReportMojo {
   private static final ReverseExecutor reverseExecutor = new ReverseExecutor();
 
   @Parameter(defaultValue="${detectGeneratedSourcePaths}")
@@ -281,7 +282,7 @@ public class CoverallsMojo extends CoverallsReportMojo {
 
   @Override
   protected CoverallsClient createCoverallsClient() {
-    return isReversedExecution ? super.createCoverallsClient() : null;
+    return isReversedExecution ? new CoverallsIoClient(coverallsUrl, settings.getActiveProxy()) : null;
   }
 
   @Override
