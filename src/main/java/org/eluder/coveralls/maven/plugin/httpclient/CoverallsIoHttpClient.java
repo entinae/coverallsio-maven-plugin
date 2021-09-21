@@ -14,6 +14,7 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.entity.ContentType;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 
 @SuppressWarnings("deprecation")
 class CoverallsIoHttpClient implements HttpClient {
@@ -41,7 +42,7 @@ class CoverallsIoHttpClient implements HttpClient {
     if (contentType.getCharset() != null)
       return response;
 
-    response.setEntity(new DefaultCharsetHttpEntity(entity));
+    EntityUtils.updateEntity(response, new DefaultCharsetHttpEntity(entity));
     return response;
   }
 
