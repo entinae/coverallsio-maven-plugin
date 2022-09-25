@@ -10,7 +10,7 @@ class DefaultCharsetHeaderElement implements HeaderElement {
   DefaultCharsetHeaderElement(final HeaderElement target) {
     this.target = target;
     final NameValuePair[] parameters = target.getParameters();
-    for (final NameValuePair parameter: parameters) {
+    for (final NameValuePair parameter: parameters) { // [A]
       if (parameter.getName().equalsIgnoreCase("charset")) {
         this.parameters = parameters;
         return;
@@ -49,7 +49,7 @@ class DefaultCharsetHeaderElement implements HeaderElement {
 
   @Override
   public NameValuePair getParameterByName(final String name) {
-    for (final NameValuePair parameter : parameters)
+    for (final NameValuePair parameter : parameters) // [A]
       if (parameter.getName().equalsIgnoreCase(name))
         return parameter;
 

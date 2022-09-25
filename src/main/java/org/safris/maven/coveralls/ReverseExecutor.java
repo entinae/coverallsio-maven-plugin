@@ -16,7 +16,6 @@
 
 package org.safris.maven.coveralls;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -43,7 +42,7 @@ public class ReverseExecutor {
         this.name = project.getBasedir().getName();
       }
 
-      for (final String module : new ArrayList<>(project.getModules()))
+      for (final String module : project.getModules()) // [L]
         this.modules.put(module, null);
     }
 

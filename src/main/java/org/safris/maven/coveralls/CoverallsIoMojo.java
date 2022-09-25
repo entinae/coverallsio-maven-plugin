@@ -79,7 +79,7 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
 
   private void addGeneratedSourcePaths(final Model model, final Collection<File> filePaths) throws IOException {
     if ("pom".equals(model.getPackaging())) {
-      for (final String module : model.getModules()) {
+      for (final String module : model.getModules()) { // [L]
         addGeneratedSourcePaths(getModelArtifact(new File(model.getPomFile().getParentFile(), module + "/pom.xml")), filePaths);
       }
     }
@@ -93,66 +93,66 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
     if (!generatedSources.exists())
       return;
 
-    final List<String> paths = new ArrayList<>();
+    final ArrayList<String> paths = new ArrayList<>();
     Files
       .walk(generatedSources.toPath())
       .filter(p -> p.getFileName().toString().endsWith(".java"))
       .map(Path::toFile)
       .forEach(file -> {
-      final String filePath = file.getParentFile().getAbsolutePath();
-      for (final String path : paths)
-        if (filePath.startsWith(path))
-          return;
+        final String filePath = file.getParentFile().getAbsolutePath();
+        for (int i = 0, i$ = paths.size(); i < i$; ++i) // [RA]
+          if (filePath.startsWith(paths.get(i)))
+            return;
 
-      boolean inBlockQuote = false;
-      String packageName = null;
-      try (final Scanner scanner = new Scanner(file)) {
-        scanner.useDelimiter("\r|\n");
-        while (scanner.hasNext()) {
-          final String line = scanner.next().trim();
-          if (inBlockQuote) {
-            // Matches a line that has a closing block comment "*/" sequence
-            if (line.matches("^(([^*]|(\\*[^/]))*\\*+/([^/]|(/[^*])|(/$))*)*$"))
-              inBlockQuote = false;
-            else
+        boolean inBlockQuote = false;
+        String packageName = null;
+        try (final Scanner scanner = new Scanner(file)) {
+          scanner.useDelimiter("\r|\n");
+          while (scanner.hasNext()) {
+            final String line = scanner.next().trim();
+            if (inBlockQuote) {
+              // Matches a line that has a closing block comment "*/" sequence
+              if (line.matches("^(([^*]|(\\*[^/]))*\\*+/([^/]|(/[^*])|(/$))*)*$"))
+                inBlockQuote = false;
+              else
+                continue;
+            }
+
+            if (line.length() == 0 || line.startsWith("//")) {
               continue;
-          }
+            }
 
-          if (line.length() == 0 || line.startsWith("//")) {
-            continue;
-          }
+            // Matches a line that has an opening block comment "/*" sequence
+            if (line.matches("^(([^/]|(/[^*]))*/+\\*([^*]|(\\*[^/])|(\\*$))*)*$")) {
+              inBlockQuote = true;
+              continue;
+            }
 
-          // Matches a line that has an opening block comment "/*" sequence
-          if (line.matches("^(([^/]|(/[^*]))*/+\\*([^*]|(\\*[^/])|(\\*$))*)*$")) {
-            inBlockQuote = true;
-            continue;
-          }
+            if (line.startsWith("package ")) {
+              packageName = line.substring(8, line.indexOf(';'));
+              break;
+            }
 
-          if (line.startsWith("package ")) {
-            packageName = line.substring(8, line.indexOf(';'));
-            break;
-          }
-
-          if (line.contains("class ") || line.contains("interface ") || line.contains("@interface ") || line.contains("enum ")) {
-            break;
+            if (line.contains("class ") || line.contains("interface ") || line.contains("@interface ") || line.contains("enum ")) {
+              break;
+            }
           }
         }
-      }
-      catch (final FileNotFoundException e) {
-        throw new IllegalStateException(e);
-      }
+        catch (final FileNotFoundException e) {
+          throw new IllegalStateException(e);
+        }
 
-      if (packageName != null)
-        paths.add(filePath.substring(0, filePath.length() - packageName.length() - 1));
-      else
-        super.getLog().warn("Could not determine package name of: " + file.getAbsolutePath());
-    });
+        if (packageName != null)
+          paths.add(filePath.substring(0, filePath.length() - packageName.length() - 1));
+        else
+          super.getLog().warn("Could not determine package name of: " + file.getAbsolutePath());
+      });
 
     if (paths.size() == 0)
       return;
 
-    for (final String path : paths)
-      filePaths.add(new File(path));
+    for (int i = 0, i$ = paths.size(); i < i$; ++i) // [RA]
+      filePaths.add(new File(paths.get(i)));
   }
 
   public boolean isAggregator() {
@@ -162,7 +162,7 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
   private List<File> getJacocoReports() {
     final List<String> modules = project.getModules();
     final List<File> reportFiles = new ArrayList<>(modules.size());
-    for (final String module : modules) {
+    for (final String module : modules) { // [L]
       final File moduleDir = new File(project.getBasedir(), module);
       File reportFile = new File(moduleDir, "target/site/jacoco/jacoco.xml");
       if (!reportFile.exists())
