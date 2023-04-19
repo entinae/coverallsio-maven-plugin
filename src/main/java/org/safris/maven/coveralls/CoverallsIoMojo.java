@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -79,9 +80,10 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
 
   private void addGeneratedSourcePaths(final Model model, final Collection<File> filePaths) throws IOException {
     if ("pom".equals(model.getPackaging())) {
-      for (final String module : model.getModules()) { // [L]
-        addGeneratedSourcePaths(getModelArtifact(new File(model.getPomFile().getParentFile(), module + "/pom.xml")), filePaths);
-      }
+      final List<String> modules = model.getModules();
+      if (modules.size() > 0)
+        for (final String module : modules) // [L]
+          addGeneratedSourcePaths(getModelArtifact(new File(model.getPomFile().getParentFile(), module + "/pom.xml")), filePaths);
     }
     else {
       addGeneratedSourcePaths(new File(model.getPomFile().getParentFile(), "/target"), filePaths);
@@ -94,13 +96,14 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
       return;
 
     final ArrayList<String> paths = new ArrayList<>();
+    final int size = paths.size();
     Files
       .walk(generatedSources.toPath())
       .filter(p -> p.getFileName().toString().endsWith(".java"))
       .map(Path::toFile)
       .forEach(file -> {
         final String filePath = file.getParentFile().getAbsolutePath();
-        for (int i = 0, i$ = paths.size(); i < i$; ++i) // [RA]
+        for (int i = 0; i < size; ++i) // [RA]
           if (filePath.startsWith(paths.get(i)))
             return;
 
@@ -148,10 +151,7 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
           super.getLog().warn("Could not determine package name of: " + file.getAbsolutePath());
       });
 
-    if (paths.size() == 0)
-      return;
-
-    for (int i = 0, i$ = paths.size(); i < i$; ++i) // [RA]
+    for (int i = 0; i < size; ++i) // [RA]
       filePaths.add(new File(paths.get(i)));
   }
 
@@ -161,7 +161,11 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
 
   private List<File> getJacocoReports() {
     final List<String> modules = project.getModules();
-    final List<File> reportFiles = new ArrayList<>(modules.size());
+    final int size = modules.size();
+    if (size == 0)
+      return Collections.EMPTY_LIST;
+
+    final ArrayList<File> reportFiles = new ArrayList<>(size);
     for (final String module : modules) { // [L]
       final File moduleDir = new File(project.getBasedir(), module);
       File reportFile = new File(moduleDir, "target/site/jacoco/jacoco.xml");
@@ -176,10 +180,11 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
   }
 
   private void submitExecution(final MavenProject project, final ReverseExecutor reverseExecutor) {
-    super.getLog().info("Submitting " + project.getName() + " " + project.getVersion());
+    final String projectDescription = project.getName() + " " + project.getVersion();
+    super.getLog().info("Submitting " + projectDescription);
     reverseExecutor.submit(project, () -> {
       try {
-        super.getLog().info("Running " + project.getName() + " " + project.getVersion());
+        super.getLog().info("Running " + projectDescription);
 
         dryRun = wasDryRun;
         isReversedExecution = true;
@@ -210,34 +215,30 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
 
   @Override
   public Log getLog() {
-    if (filterLog == null) {
-      filterLog = new FilterLog(super.getLog()) {
-        @Override
-        public boolean isInfoEnabled() {
-          return isReversedExecution;
-        }
+    return filterLog == null ? filterLog = new FilterLog(super.getLog()) {
+      @Override
+      public boolean isInfoEnabled() {
+        return isReversedExecution;
+      }
 
-        @Override
-        public void info(final CharSequence content) {
-          if (isInfoEnabled())
-            super.info(content);
-        }
+      @Override
+      public void info(final CharSequence content) {
+        if (isInfoEnabled())
+          super.info(content);
+      }
 
-        @Override
-        public void info(final CharSequence content, final Throwable error) {
-          if (isInfoEnabled())
-            super.info(content, error);
-        }
+      @Override
+      public void info(final CharSequence content, final Throwable error) {
+        if (isInfoEnabled())
+          super.info(content, error);
+      }
 
-        @Override
-        public void info(final Throwable error) {
-          if (isInfoEnabled())
-            super.info(error);
-        }
-      };
-    }
-
-    return filterLog;
+      @Override
+      public void info(final Throwable error) {
+        if (isInfoEnabled())
+          super.info(error);
+      }
+    } : filterLog;
   }
 
   @Override
@@ -252,11 +253,13 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
     }
 
     if (detectGeneratedSourcePaths) {
-      final List<File> generatedSourceDirs = new ArrayList<>();
+      final ArrayList<File> generatedSourceDirs = new ArrayList<>();
       addGeneratedSourcePaths(project.getModel(), generatedSourceDirs);
-      if (generatedSourceDirs.size() > 0) {
+      final int size = generatedSourceDirs.size();
+      if (size > 0) {
         if (sourceDirectories != null) {
-          final LinkedHashSet<File> set = new LinkedHashSet<>(sourceDirectories);
+          final LinkedHashSet<File> set = new LinkedHashSet<>(sourceDirectories.size() + size);
+          set.addAll(sourceDirectories);
           set.addAll(generatedSourceDirs);
           sourceDirectories.clear();
           sourceDirectories.addAll(set);

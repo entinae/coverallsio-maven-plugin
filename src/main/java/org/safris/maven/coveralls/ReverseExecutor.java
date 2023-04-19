@@ -16,8 +16,9 @@
 
 package org.safris.maven.coveralls;
 
+import java.io.File;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.maven.project.MavenProject;
@@ -26,7 +27,7 @@ public class ReverseExecutor {
   private final Module rootModule = new Module();
 
   private class Module {
-    private final Map<String,Module> modules = new HashMap<>();
+    private final HashMap<String,Module> modules = new HashMap<>();
     private final MavenProject project;
     private final Runnable runnable;
     private final String name;
@@ -35,15 +36,17 @@ public class ReverseExecutor {
     private Module(final MavenProject project, final Runnable runnable) {
       this.project = Objects.requireNonNull(project);
       this.runnable = runnable;
-      if (project.hasParent() && project.getParent().getBasedir() != null && project.getBasedir().getAbsolutePath().startsWith(project.getParent().getBasedir().getAbsolutePath())) {
-        this.name = project.getBasedir().getAbsolutePath().substring(project.getParent().getBasedir().getAbsolutePath().length() + 1);
-      }
-      else {
-        this.name = project.getBasedir().getName();
-      }
+      final File basedir = project.getBasedir();
+      final MavenProject parent;
+      if (project.hasParent() && (parent = project.getParent()).getBasedir() != null && basedir.getAbsolutePath().startsWith(parent.getBasedir().getAbsolutePath()))
+        this.name = basedir.getAbsolutePath().substring(parent.getBasedir().getAbsolutePath().length() + 1);
+      else
+        this.name = basedir.getName();
 
-      for (final String module : project.getModules()) // [L]
-        this.modules.put(module, null);
+      final List<String> modules = project.getModules();
+      if (modules.size() > 0)
+        for (final String module : modules) // [L]
+          this.modules.put(module, null);
     }
 
     private Module() {
@@ -102,7 +105,7 @@ public class ReverseExecutor {
 
     @Override
     public String toString() {
-      return name + ": " + modules.toString();
+      return name + ": " + modules;
     }
   }
 
