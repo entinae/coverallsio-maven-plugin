@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Seva Safris
+# Copyright (c) 2018 ENTINAE
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Set up JDK ${{ matrix.jdk }}
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: 'zulu'
         java-version: ${{ matrix.jdk }}
