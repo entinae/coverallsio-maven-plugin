@@ -1,4 +1,4 @@
-/* Copyright (c) 2019 Seva Safris
+/* Copyright (c) 2019 ENTINAE
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,8 +114,9 @@ public class ReverseExecutor {
   public void submit(final MavenProject project, final Runnable runnable) {
     final Module module = new Module(project, runnable);
     final String parentPath;
-    if (project.hasParent() && project.getParent().getBasedir() != null)
-      parentPath = project.getParent().getBasedir().getAbsolutePath();
+    final File basedir;
+    if (project.hasParent() && (basedir = project.getParent().getBasedir()) != null)
+      parentPath = basedir.getAbsolutePath();
     else
       parentPath = project.getBasedir().getParentFile().getAbsolutePath();
 
@@ -123,10 +124,10 @@ public class ReverseExecutor {
       rootDir = parentPath + "/";
 
     final Module parent;
-    if (parentPath.length() <= rootDir.length())
-      parent = rootModule;
-    else
+    if (parentPath.length() > rootDir.length())
       parent = rootModule.getModule(parentPath.substring(rootDir.length()));
+    else
+      parent = rootModule;
 
     parent.addModule(module);
     if (project.getModules().isEmpty())
