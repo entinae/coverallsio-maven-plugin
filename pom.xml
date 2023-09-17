@@ -21,7 +21,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.entinae</groupId>
   <artifactId>coverallsio-maven-plugin</artifactId>
-  <version>4.3.0-2</version>
+  <version>4.3.0-3-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <url>https://github.com/entinae/coverallsio-maven-plugin</url>
   <name>Coveralls.io Maven Plugin</name>
