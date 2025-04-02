@@ -23,7 +23,7 @@
       <configuration>
         <id>coverallsio</id>
         <default-phases>
-          <deploy>org.safris.maven:coverallsio-maven-plugin:report</deploy>
+          <deploy>org.entinae:coverallsio-maven-plugin:report</deploy>
         </default-phases>
       </configuration>
     </component>
@@ -37,7 +37,7 @@
           <phase>report</phase>
         </phases>
         <default-phases>
-          <report>org.safris.maven:coverallsio-maven-plugin:report</report>
+          <report>org.entinae:coverallsio-maven-plugin:report</report>
         </default-phases>
       </configuration>
     </component>

@@ -14,7 +14,7 @@
  * program. If not, see <http://opensource.org/licenses/MIT/>.
  */
 
-package org.safris.maven.coveralls;
+package org.entinae.coveralls;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -99,9 +99,9 @@ public class CoverallsIoMojo extends CoverallsReportMojo {
     final int size = paths.size();
     Files
       .walk(generatedSources.toPath())
-      .filter(p -> p.getFileName().toString().endsWith(".java"))
+      .filter((final Path p) -> p.getFileName().toString().endsWith(".java"))
       .map(Path::toFile)
-      .forEach(file -> {
+      .forEach((final File file) -> {
         final String filePath = file.getParentFile().getAbsolutePath();
         for (int i = 0; i < size; ++i) // [RA]
           if (filePath.startsWith(paths.get(i)))

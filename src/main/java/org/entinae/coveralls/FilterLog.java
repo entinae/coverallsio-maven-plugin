@@ -14,7 +14,7 @@
  * program. If not, see <http://opensource.org/licenses/MIT/>.
  */
 
-package org.safris.maven.coveralls;
+package org.entinae.coveralls;
 
 import java.util.Objects;
 

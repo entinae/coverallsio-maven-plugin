@@ -51,12 +51,12 @@ class DefaultCharsetHeaderElement implements HeaderElement {
 
   @Override
   public String getName() {
-    return this.target.getName();
+    return target.getName();
   }
 
   @Override
   public String getValue() {
-    return this.target.getValue();
+    return target.getValue();
   }
 
   @Override
